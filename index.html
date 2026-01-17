@@ -529,7 +529,7 @@
             
             const scoreDiv = document.getElementById('quiz-score');
             scoreDiv.style.display = 'block';
-            const percentage = totalQuestions > 0 ? Math.round(score/totalQuestions*100) : 0;
+            const percentage = totalQuestions > 0 ? Math.round(score / totalQuestions * 100) : 0;
             scoreDiv.innerHTML = `Your Score: ${score} / ${totalQuestions} (${percentage}%)`;
             
             // Scroll to score
@@ -540,6 +540,10 @@
         let matrixSize = 5;
         let originalMatrix = [];
         let maskMatrix = [];
+        
+        // Configuration constants
+        const PADDING_ROWS_COUNT = 2;
+        const RANDOM_MASK_PROBABILITY = 0.3;
         
         function initializeMatrix() {
             matrixSize = parseInt(document.getElementById('matrix-size').value);
@@ -630,8 +634,8 @@
                     break;
                     
                 case 'padding':
-                    // Mask the last 2 rows as "padding"
-                    const paddingRows = Math.min(2, Math.floor(matrixSize / 2));
+                    // Mask the last rows as "padding"
+                    const paddingRows = Math.min(PADDING_ROWS_COUNT, Math.floor(matrixSize / 2));
                     for (let i = matrixSize - paddingRows; i < matrixSize; i++) {
                         for (let j = 0; j < matrixSize; j++) {
                             maskMatrix[i][j] = 0;
@@ -651,13 +655,13 @@
                     break;
                     
                 case 'random':
-                    // Random masking (30% of elements)
+                    // Random masking
                     for (let i = 0; i < matrixSize; i++) {
                         for (let j = 0; j < matrixSize; j++) {
-                            maskMatrix[i][j] = Math.random() > 0.3 ? 1 : 0;
+                            maskMatrix[i][j] = Math.random() > RANDOM_MASK_PROBABILITY ? 1 : 0;
                         }
                     }
-                    explanation = 'Random Mask: Approximately 30% of positions are randomly masked. This technique is used in models like BERT for masked language modeling tasks.';
+                    explanation = `Random Mask: Approximately ${Math.round(RANDOM_MASK_PROBABILITY * 100)}% of positions are randomly masked. This technique is used in models like BERT for masked language modeling tasks.`;
                     break;
                     
                 case 'custom':
