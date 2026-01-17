@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Masking - Quiz & Interactive Matrix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        /* Quiz Styles */
+        .quiz-question {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .quiz-question h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .quiz-options {
+            list-style: none;
+        }
+        
+        .quiz-options li {
+            margin: 10px 0;
+        }
+        
+        .quiz-options label {
+            display: block;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-options label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .quiz-options input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .quiz-feedback.correct {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            display: block;
+        }
+        
+        .quiz-feedback.incorrect {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            display: block;
+        }
+        
+        .submit-quiz {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .submit-quiz:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .quiz-score {
+            text-align: center;
+            font-size: 1.5em;
+            color: #667eea;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        /* Matrix Styles */
+        .matrix-controls {
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .matrix-controls label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .matrix-controls select,
+        .matrix-controls input[type="number"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .matrix-controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .matrix-controls button:hover {
+            background: #764ba2;
+        }
+        
+        .matrix-display {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .matrix-container {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .matrix-container h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .matrix {
+            display: inline-grid;
+            gap: 2px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .matrix-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .matrix-cell.masked {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+        
+        .matrix-cell.unmasked {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .matrix-explanation {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-left: 5px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .matrix-explanation h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .matrix-display {
+                flex-direction: column;
+            }
+            
+            .matrix-cell {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 Understanding Masking</h1>
+            <p>Learn about masking in machine learning and neural networks</p>
+        </header>
+        
+        <!-- Quiz Section -->
+        <section class="section" id="quiz-section">
+            <h2>📝 Masking Quiz</h2>
+            <p style="margin-bottom: 20px; color: #666;">Test your knowledge about masking concepts!</p>
+            
+            <div class="quiz-question" data-question="1">
+                <h3>Question 1: What is the primary purpose of masking in neural networks?</h3>
+                <ul class="quiz-options">
+                    <li>
+                        <label>
+                            <input type="radio" name="q1" value="a">
+                            To increase the model's parameters
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q1" value="b">
+                            To hide certain elements from being processed or attended to
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q1" value="c">
+                            To encrypt the data
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q1" value="d">
+                            To compress the model
+                        </label>
+                    </li>
+                </ul>
+                <div class="quiz-feedback"></div>
+            </div>
+            
+            <div class="quiz-question" data-question="2">
+                <h3>Question 2: In attention mechanisms, what does a mask value of 0 typically mean?</h3>
+                <ul class="quiz-options">
+                    <li>
+                        <label>
+                            <input type="radio" name="q2" value="a">
+                            The position should receive full attention
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q2" value="b">
+                            The position should be ignored/masked out
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q2" value="c">
+                            The position has no meaning
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q2" value="d">
+                            The position is an error
+                        </label>
+                    </li>
+                </ul>
+                <div class="quiz-feedback"></div>
+            </div>
+            
+            <div class="quiz-question" data-question="3">
+                <h3>Question 3: What is padding mask used for?</h3>
+                <ul class="quiz-options">
+                    <li>
+                        <label>
+                            <input type="radio" name="q3" value="a">
+                            To add extra layers to the network
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q3" value="b">
+                            To ignore padded tokens in sequences of varying lengths
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q3" value="c">
+                            To increase the training speed
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q3" value="d">
+                            To prevent overfitting
+                        </label>
+                    </li>
+                </ul>
+                <div class="quiz-feedback"></div>
+            </div>
+            
+            <div class="quiz-question" data-question="4">
+                <h3>Question 4: In a Transformer's decoder, what does a causal/look-ahead mask prevent?</h3>
+                <ul class="quiz-options">
+                    <li>
+                        <label>
+                            <input type="radio" name="q4" value="a">
+                            Attending to padding tokens
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q4" value="b">
+                            Attending to future positions in the sequence
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q4" value="c">
+                            Attending to the encoder
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q4" value="d">
+                            Gradient explosion
+                        </label>
+                    </li>
+                </ul>
+                <div class="quiz-feedback"></div>
+            </div>
+            
+            <div class="quiz-question" data-question="5">
+                <h3>Question 5: When masking is applied to attention scores, what value is typically used to mask out positions?</h3>
+                <ul class="quiz-options">
+                    <li>
+                        <label>
+                            <input type="radio" name="q5" value="a">
+                            0
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q5" value="b">
+                            1
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q5" value="c">
+                            -∞ (negative infinity)
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="q5" value="d">
+                            +∞ (positive infinity)
+                        </label>
+                    </li>
+                </ul>
+                <div class="quiz-feedback"></div>
+            </div>
+            
+            <button class="submit-quiz" onclick="submitQuiz()">Submit Quiz</button>
+            <div class="quiz-score" id="quiz-score"></div>
+        </section>
+        
+        <!-- Interactive Matrix Section -->
+        <section class="section" id="matrix-section">
+            <h2>🔢 Interactive Masking Matrix</h2>
+            <p style="margin-bottom: 20px; color: #666;">Explore different types of masking operations on matrices!</p>
+            
+            <div class="matrix-controls">
+                <div>
+                    <label for="mask-type">Mask Type:</label>
+                    <select id="mask-type" onchange="applyMask()">
+                        <option value="none">No Mask</option>
+                        <option value="padding">Padding Mask</option>
+                        <option value="causal">Causal/Look-Ahead Mask</option>
+                        <option value="random">Random Mask</option>
+                        <option value="custom">Custom Pattern</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="matrix-size">Matrix Size:</label>
+                    <input type="number" id="matrix-size" min="3" max="8" value="5" onchange="initializeMatrix()">
+                </div>
+                
+                <button onclick="initializeMatrix()">Reset Matrix</button>
+            </div>
+            
+            <div class="matrix-display">
+                <div class="matrix-container">
+                    <h3>Original Matrix</h3>
+                    <div id="original-matrix"></div>
+                </div>
+                
+                <div class="matrix-container">
+                    <h3>Mask</h3>
+                    <div id="mask-matrix"></div>
+                </div>
+                
+                <div class="matrix-container">
+                    <h3>Masked Result</h3>
+                    <div id="result-matrix"></div>
+                </div>
+            </div>
+            
+            <div class="matrix-explanation" id="mask-explanation">
+                <h4>Explanation</h4>
+                <p id="explanation-text">Select a mask type to see how it works!</p>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        // Quiz functionality
+        const quizAnswers = {
+            q1: 'b',
+            q2: 'b',
+            q3: 'b',
+            q4: 'b',
+            q5: 'c'
+        };
+        
+        const quizExplanations = {
+            q1: 'Masking is used to hide or ignore certain elements, preventing them from being processed or attended to in neural networks.',
+            q2: 'In attention mechanisms, a mask value of 0 (or false) typically means the position should be ignored or masked out.',
+            q3: 'Padding masks are used to ignore padded tokens that are added to make sequences of varying lengths uniform in batch processing.',
+            q4: 'A causal or look-ahead mask prevents the model from attending to future positions, ensuring that predictions only depend on known outputs.',
+            q5: 'Negative infinity (-∞) is used because after softmax, it becomes 0, effectively removing the attention to that position.'
+        };
+        
+        function submitQuiz() {
+            let score = 0;
+            let totalQuestions = Object.keys(quizAnswers).length;
+            
+            for (let question in quizAnswers) {
+                const selected = document.querySelector(`input[name="${question}"]:checked`);
+                const feedbackDiv = document.querySelector(`[data-question="${question.slice(1)}"] .quiz-feedback`);
+                
+                if (selected) {
+                    const isCorrect = selected.value === quizAnswers[question];
+                    if (isCorrect) {
+                        score++;
+                        feedbackDiv.className = 'quiz-feedback correct';
+                        feedbackDiv.innerHTML = `✓ Correct! ${quizExplanations[question]}`;
+                    } else {
+                        feedbackDiv.className = 'quiz-feedback incorrect';
+                        feedbackDiv.innerHTML = `✗ Incorrect. ${quizExplanations[question]}`;
+                    }
+                } else {
+                    feedbackDiv.className = 'quiz-feedback incorrect';
+                    feedbackDiv.innerHTML = '✗ No answer selected.';
+                }
+            }
+            
+            const scoreDiv = document.getElementById('quiz-score');
+            scoreDiv.style.display = 'block';
+            const percentage = totalQuestions > 0 ? Math.round(score / totalQuestions * 100) : 0;
+            scoreDiv.innerHTML = `Your Score: ${score} / ${totalQuestions} (${percentage}%)`;
+            
+            // Scroll to score
+            scoreDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Matrix functionality
+        let matrixSize = 5;
+        let originalMatrix = [];
+        let maskMatrix = [];
+        
+        // Configuration constants
+        const PADDING_ROWS_COUNT = 2;
+        const RANDOM_MASK_PROBABILITY = 0.3;
+        
+        function initializeMatrix() {
+            matrixSize = parseInt(document.getElementById('matrix-size').value);
+            
+            // Create original matrix with random values
+            originalMatrix = [];
+            for (let i = 0; i < matrixSize; i++) {
+                originalMatrix[i] = [];
+                for (let j = 0; j < matrixSize; j++) {
+                    originalMatrix[i][j] = Math.floor(Math.random() * 9) + 1;
+                }
+            }
+            
+            // Initialize mask as all ones (no masking)
+            maskMatrix = [];
+            for (let i = 0; i < matrixSize; i++) {
+                maskMatrix[i] = [];
+                for (let j = 0; j < matrixSize; j++) {
+                    maskMatrix[i][j] = 1;
+                }
+            }
+            
+            displayMatrices();
+            applyMask();
+        }
+        
+        function displayMatrices() {
+            displayMatrix('original-matrix', originalMatrix, false);
+            displayMatrix('mask-matrix', maskMatrix, true);
+        }
+        
+        function displayMatrix(containerId, matrix, isMask) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const matrixDiv = document.createElement('div');
+            matrixDiv.className = 'matrix';
+            matrixDiv.style.gridTemplateColumns = `repeat(${matrixSize}, 50px)`;
+            
+            for (let i = 0; i < matrixSize; i++) {
+                for (let j = 0; j < matrixSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-cell';
+                    cell.textContent = matrix[i][j];
+                    
+                    if (isMask) {
+                        if (matrix[i][j] === 0) {
+                            cell.classList.add('masked');
+                        } else {
+                            cell.classList.add('unmasked');
+                        }
+                        
+                        // Make mask cells clickable for custom pattern
+                        // Use closure to capture current i, j values
+                        cell.onclick = (function(row, col) {
+                            return function() {
+                                if (document.getElementById('mask-type').value === 'custom') {
+                                    maskMatrix[row][col] = maskMatrix[row][col] === 1 ? 0 : 1;
+                                    applyMask();
+                                }
+                            };
+                        })(i, j);
+                        cell.style.cursor = document.getElementById('mask-type').value === 'custom' ? 'pointer' : 'default';
+                    }
+                    
+                    matrixDiv.appendChild(cell);
+                }
+            }
+            
+            container.appendChild(matrixDiv);
+        }
+        
+        function applyMask() {
+            const maskType = document.getElementById('mask-type').value;
+            
+            // Reset mask
+            for (let i = 0; i < matrixSize; i++) {
+                for (let j = 0; j < matrixSize; j++) {
+                    maskMatrix[i][j] = 1;
+                }
+            }
+            
+            let explanation = '';
+            
+            switch(maskType) {
+                case 'none':
+                    explanation = 'No masking applied. All elements are visible and can be attended to.';
+                    break;
+                    
+                case 'padding':
+                    // Mask the last rows as "padding"
+                    const paddingRows = Math.min(PADDING_ROWS_COUNT, Math.floor(matrixSize / 2));
+                    for (let i = matrixSize - paddingRows; i < matrixSize; i++) {
+                        for (let j = 0; j < matrixSize; j++) {
+                            maskMatrix[i][j] = 0;
+                        }
+                    }
+                    explanation = `Padding Mask: The last ${paddingRows} row(s) are masked (shown as 0). This simulates ignoring padded tokens in sequences of different lengths. Masked positions (0) will not be attended to.`;
+                    break;
+                    
+                case 'causal':
+                    // Upper triangular mask (can't look ahead)
+                    for (let i = 0; i < matrixSize; i++) {
+                        for (let j = i + 1; j < matrixSize; j++) {
+                            maskMatrix[i][j] = 0;
+                        }
+                    }
+                    explanation = 'Causal/Look-Ahead Mask: Upper triangular positions are masked (0). This prevents attending to future positions - position i can attend to itself and positions < i. Used in autoregressive models like GPT.';
+                    break;
+                    
+                case 'random':
+                    // Random masking
+                    for (let i = 0; i < matrixSize; i++) {
+                        for (let j = 0; j < matrixSize; j++) {
+                            maskMatrix[i][j] = Math.random() > RANDOM_MASK_PROBABILITY ? 1 : 0;
+                        }
+                    }
+                    explanation = `Random Mask: Approximately ${Math.round(RANDOM_MASK_PROBABILITY * 100)}% of positions are randomly masked. This technique is used in models like BERT for masked language modeling tasks.`;
+                    break;
+                    
+                case 'custom':
+                    explanation = 'Custom Pattern: Click on the mask cells to toggle between masked (0) and unmasked (1). Create your own masking pattern!';
+                    break;
+            }
+            
+            document.getElementById('explanation-text').textContent = explanation;
+            
+            // Display updated mask
+            displayMatrix('mask-matrix', maskMatrix, true);
+            
+            // Calculate and display result
+            displayResult();
+        }
+        
+        function displayResult() {
+            const resultMatrix = [];
+            for (let i = 0; i < matrixSize; i++) {
+                resultMatrix[i] = [];
+                for (let j = 0; j < matrixSize; j++) {
+                    resultMatrix[i][j] = maskMatrix[i][j] === 0 ? 0 : originalMatrix[i][j];
+                }
+            }
+            
+            const container = document.getElementById('result-matrix');
+            container.innerHTML = '';
+            
+            const matrixDiv = document.createElement('div');
+            matrixDiv.className = 'matrix';
+            matrixDiv.style.gridTemplateColumns = `repeat(${matrixSize}, 50px)`;
+            
+            for (let i = 0; i < matrixSize; i++) {
+                for (let j = 0; j < matrixSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-cell';
+                    cell.textContent = resultMatrix[i][j];
+                    
+                    if (resultMatrix[i][j] === 0 && originalMatrix[i][j] !== 0) {
+                        cell.classList.add('masked');
+                    } else {
+                        cell.style.background = '#4ade80';
+                        cell.style.borderColor = '#4ade80';
+                        cell.style.color = 'white';
+                    }
+                    
+                    matrixDiv.appendChild(cell);
+                }
+            }
+            
+            container.appendChild(matrixDiv);
+        }
+        
+        // Initialize on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeMatrix);
+        } else {
+            initializeMatrix();
+        }
+    </script>
+</body>
+</html>
