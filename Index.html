@@ -513,6 +513,9 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-' + tab.dataset.view).classList.add('active');
 
+        // Hide tooltip when switching views
+        hideTooltip();
+        
         currentView = tab.dataset.view;
         drawView(currentView);
       });
@@ -596,8 +599,11 @@
 
     function hideTooltip() {
       tooltip.classList.remove('visible');
-      // keep display block so layout stays stable, but hide visually
-      // optional: tooltip.style.display = 'none';
+      setTimeout(() => {
+        if (!tooltip.classList.contains('visible')) {
+          tooltip.style.display = 'none';
+        }
+      }, 200); // Wait for fade transition to complete
     }
 
     function isUserMask(mask) {
@@ -652,8 +658,19 @@
       mask.y = y;
     }
 
+    const canvasListeners = new Map();
+    
     function setupHover(canvas) {
-      canvas.addEventListener('mousemove', (e) => {
+      const canvasId = canvas.id;
+      
+      // Remove existing listeners if any
+      if (canvasListeners.has(canvasId)) {
+        const oldListeners = canvasListeners.get(canvasId);
+        canvas.removeEventListener('mousemove', oldListeners.mousemove);
+        canvas.removeEventListener('mouseleave', oldListeners.mouseleave);
+      }
+      
+      const mousemoveHandler = (e) => {
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
@@ -668,9 +685,18 @@
 
         if (found) showTooltip(found, e.clientX, e.clientY);
         else hideTooltip();
+      };
+      
+      const mouseleaveHandler = () => hideTooltip();
+      
+      canvas.addEventListener('mousemove', mousemoveHandler);
+      canvas.addEventListener('mouseleave', mouseleaveHandler);
+      
+      // Store references for cleanup
+      canvasListeners.set(canvasId, {
+        mousemove: mousemoveHandler,
+        mouseleave: mouseleaveHandler
       });
-
-      canvas.addEventListener('mouseleave', hideTooltip);
     }
 
     function addJitter(positions, targetX, targetY, maxAttempts = 30) {
