@@ -529,7 +529,8 @@
             
             const scoreDiv = document.getElementById('quiz-score');
             scoreDiv.style.display = 'block';
-            scoreDiv.innerHTML = `Your Score: ${score} / ${totalQuestions} (${Math.round(score/totalQuestions*100)}%)`;
+            const percentage = totalQuestions > 0 ? Math.round(score/totalQuestions*100) : 0;
+            scoreDiv.innerHTML = `Your Score: ${score} / ${totalQuestions} (${percentage}%)`;
             
             // Scroll to score
             scoreDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -592,12 +593,15 @@
                         }
                         
                         // Make mask cells clickable for custom pattern
-                        cell.onclick = () => {
-                            if (document.getElementById('mask-type').value === 'custom') {
-                                maskMatrix[i][j] = maskMatrix[i][j] === 1 ? 0 : 1;
-                                applyMask();
-                            }
-                        };
+                        // Use closure to capture current i, j values
+                        cell.onclick = (function(row, col) {
+                            return function() {
+                                if (document.getElementById('mask-type').value === 'custom') {
+                                    maskMatrix[row][col] = maskMatrix[row][col] === 1 ? 0 : 1;
+                                    applyMask();
+                                }
+                            };
+                        })(i, j);
                         cell.style.cursor = document.getElementById('mask-type').value === 'custom' ? 'pointer' : 'default';
                     }
                     
@@ -708,9 +712,11 @@
         }
         
         // Initialize on page load
-        window.onload = function() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeMatrix);
+        } else {
             initializeMatrix();
-        };
+        }
     </script>
 </body>
 </html>
