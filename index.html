@@ -637,13 +637,13 @@
                     break;
                     
                 case 'causal':
-                    // Lower triangular mask (can't look ahead)
+                    // Upper triangular mask (can't look ahead)
                     for (let i = 0; i < matrixSize; i++) {
                         for (let j = i + 1; j < matrixSize; j++) {
                             maskMatrix[i][j] = 0;
                         }
                     }
-                    explanation = 'Causal/Look-Ahead Mask: Upper triangular positions are masked (0). This prevents attending to future positions - position i can only attend to positions ≤ i. Used in autoregressive models like GPT.';
+                    explanation = 'Causal/Look-Ahead Mask: Upper triangular positions are masked (0). This prevents attending to future positions - position i can attend to itself and positions < i. Used in autoregressive models like GPT.';
                     break;
                     
                 case 'random':
